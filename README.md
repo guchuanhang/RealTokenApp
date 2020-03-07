@@ -10,10 +10,10 @@ token等服务器校验的参数都在Http请求的Header中。
 
     {
      "status": 100,
-        "msg": "",
+     "msg": "",
      "data": {}
     }
-    
+
 如果服务器端和框架当前字段不一致，可以修改 BasicResponse.java。
 
 这里data可以{}、也可以是[ ]
@@ -71,9 +71,9 @@ token等服务器校验的参数都在Http请求的Header中。
     ```
     public interface IdeaApiService {
 
-    @FormUrlEncoded
-    @POST("device/ping")
-    Observable<List<Void>> heartBeat(@Field("device_name") String deviceName);
+        @FormUrlEncoded
+        @POST("device/ping")
+        Observable<List<Void>> heartBeat(@Field("device_name") String deviceName);
     ...
     }
 
@@ -84,29 +84,31 @@ token等服务器校验的参数都在Http请求的Header中。
     修改BASE_URL为自己在项目中使用到的请求地址
     ```
     public class RetrofitHelper {
-    public static String BASE_URL = "<目标服务器地址>";
+        public static String BASE_URL = "<目标服务器地址>";
 
-    private static IdeaApiService mIdeaApiService;
+        private static IdeaApiService mIdeaApiService;
 
-    public static IdeaApiService getApiService() {
-        if (mIdeaApiService == null) {
-            mIdeaApiService = RetrofitService.getRetrofitBuilder(BASE_URL)
+        public static IdeaApiService getApiService() {
+            if (mIdeaApiService == null) {
+                 mIdeaApiService = RetrofitService.getRetrofitBuilder(BASE_URL)
                     .build().create(IdeaApiService.class);
-        }
+         }
 
-        return mIdeaApiService;
+            return mIdeaApiService;
+         }
     }
     ```
 
 ### 初始化realtoken library
 
 
-
-        class App : Application() {
-            override fun onCreate() {
-            super.onCreate()
-            RealToken.init(this,mapStr)
-      }
+    class App : Application() {
+		override fun onCreate() {
+		    super.onCreate()
+            var mapPrams = HashMap<String, Any?>()
+            ...
+            RealToken.init(this,mapPrams)
+         }
     }
 
 
@@ -119,38 +121,39 @@ RealToken.setMsg()进行设置
 1. 在ServerConfig中添加需要保存的变量
 
 
-        public class ServerConfig {
-        public static ServerConfig instance = new ServerConfig();
-        public String DEVICE_NAME;
-        public String SECRET_KEY;
+	public class ServerConfig {
+		public static ServerConfig instance = new ServerConfig();
+		public String DEVICE_NAME;
+		public String SECRET_KEY;
 
-        private ServerConfig() {
-            DEVICE_NAME = (String) PreferencesUtil.get(RealToken.getContext(), "device_name", "");
-          SECRET_KEY = (String) PreferencesUtil.get(RealToken.getContext(), "secret_key", "");
-         }
+		private ServerConfig() {
+			DEVICE_NAME = (String) PreferencesUtil.get(RealToken.getContext(), "device_name", "");
+			SECRET_KEY = (String) PreferencesUtil.get(RealToken.getContext(), "secret_key", "");
+	    }
+    }
 
 
 2.在HttpHeaderInterceptor.intercept(),生成和传递服务器端验证客户端需要使用的参数
 
+	public class HttpHeaderInterceptor implements Interceptor {
+		@Override
+		public Response intercept(Chain chain) throws IOException {
+			Long timestamp = System.currentTimeMillis() / 1000;
+			String token = KeyTools.getMD5(String.format("%d&%s", timestamp, ServerConfig.instance.SECRET_KEY)).toLowerCase();
 
-    public class HttpHeaderInterceptor implements Interceptor {
-    @Override
-    public Response intercept(Chain chain) throws IOException {
-        Long timestamp = System.currentTimeMillis() / 1000;
-        String token = KeyTools.getMD5(String.format("%d&%s", timestamp, ServerConfig.instance.SECRET_KEY)).toLowerCase();
-
-        Request request = chain.request().newBuilder()
-                .header("devicename", ServerConfig.instance.DEVICE_NAME)
-                .header("token", token)
-                .addHeader("timestamp", "" + timestamp)
-                .header("Content-Type", "application/json")
-                .build();
-        return chain.proceed(request);
-    }
-    }
+			Request request = chain.request().newBuilder()
+					.header("devicename", ServerConfig.instance.DEVICE_NAME)
+					.header("token", token)
+					.addHeader("timestamp", "" + timestamp)
+					.header("Content-Type", "application/json")
+					.build();
+			return chain.proceed(request);
+		}
+	}
 
 
 ### http 请求
+
 
     private fun heatBeat() {
         RetrofitHelper.getApiService()
