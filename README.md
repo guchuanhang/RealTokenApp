@@ -7,13 +7,13 @@ token等服务器校验的参数都在Http请求的Header中。
 
 服务器响应json数据格式如下
 
-    ```
+
     {
      "status": 100,
         "msg": "",
      "data": {}
     }
-    ```
+    
 如果服务器端和框架当前字段不一致，可以修改 BasicResponse.java。
 
 这里data可以{}、也可以是[ ]
