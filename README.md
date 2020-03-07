@@ -196,12 +196,12 @@ RealToken.setMsg()进行设置
 
 
 
-该应用fork于[zhpanvip/Retrofit2](https://github.com/zhpanvip/Retrofit2/edit/master/README.md) ,特别标注。
+该应用fork于[zhpanvip/Retrofit2](https://github.com/zhpanvip/Retrofit2) ,特别标注。
 
 
 ## License
 ```
- Copyright 2018, guchuanhang
+ Copyright 2020, guchuanhang
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
