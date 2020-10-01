@@ -32,6 +32,7 @@ public class RealToken {
     public static void clearMsg() {
         File tobeDelete = new File(ServerConfig.instance.savePath);
         FileUtils.deleteFile(tobeDelete);
+        ServerConfig.instance.tokenBean = null;
     }
 
     /**
