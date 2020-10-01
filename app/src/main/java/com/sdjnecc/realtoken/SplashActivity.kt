@@ -24,7 +24,6 @@ class SplashActivity : AppCompatActivity() {
             this.finish()
         }
     }
-
     //判断是否登录
     private fun isLogon(): Boolean {
         ServerConfig.instance.tokenBean ?: return false

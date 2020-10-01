@@ -20,7 +20,7 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
         btnLogin.setOnClickListener {
-            //登录成功，获取到 用于校验的信息后，更新realToken
+            //获取到 用于校验的信息后，更新realToken
             var tokenBean = TokenBean()
             tokenBean.deviceName = "device_0001"
             tokenBean.secretKey = "eiowoidkuuelwlwlwl"

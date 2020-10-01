@@ -27,13 +27,10 @@ class MainActivity : AppCompatActivity() {
             logout()
         }
     }
-
     private fun logout() {
         RealToken.clearMsg()
         this.finish()// 退出APP（activity stack 中只有这个一个页面）
     }
-
-
     private fun testApi() {
         RetrofitHelper.getApiService()
             .heartBeat(

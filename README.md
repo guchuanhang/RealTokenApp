@@ -12,9 +12,9 @@
     ```
     include ':realtoken'
     ```
-3. 在app build.gradle dependencies中追加
+3. 在app build.gradle dependencies中添加
     ```
-    api project(path: ':realtoken')
+    implementation project(path: ':realtoken')
     ```
 
 ## app 中创建必要的文件
@@ -69,7 +69,7 @@
     }
     ```
 
-## 定义客户端与服务器进行token校验，需要提前知道的信息(eg.密码)
+## 定义客户端与服务器进行token校验时需要提前知道的信息(eg.密码)
 
 1. 修改TokenBean.java 字段信息
 
@@ -177,6 +177,7 @@
                     }
 
                     override fun onFail(message: String?) {
+                        //调用失败原因
                         super.onFail(message)
                     }
 
@@ -191,6 +192,98 @@
 默认会进行toast提示msg信息。如果要取消该功能，可以屏蔽掉ResponseObserver.onFail中对 super.onFail()的调用
 
 需要精细化的处理，可以参考ResponseObserver.onError() 并 override onError进行处理
+
+# Token方式的一般过程
+
+ ## SplashActivitykt
+ 判断tokenBean是否为null，如果是跳转到登录页面，否则跳转到主页面
+
+    class SplashActivity : AppCompatActivity() {
+        override fun onCreate(savedInstanceState: Bundle?) {
+            super.onCreate(savedInstanceState)
+            setContentView(R.layout.activity_splash)
+            if (isLogon()) {
+                startActivity(Intent(this, MainActivity::class.java))
+                this.finish()
+            } else {
+                startActivity(Intent(this, LoginActivity::class.java))
+                this.finish()
+            }
+        }
+        //判断是否登录
+        private fun isLogon(): Boolean {
+            ServerConfig.instance.tokenBean ?: return false
+            return true
+        }
+    }
+
+## LoginActivity.kt
+  
+  获取到用于校验的信息后，更新realToken(一般是提取的输入框内容)
+
+    class LoginActivity : AppCompatActivity() {
+        override fun onCreate(savedInstanceState: Bundle?) {
+            super.onCreate(savedInstanceState)
+            setContentView(R.layout.activity_login)
+            btnLogin.setOnClickListener {
+                //获取到 用于校验的信息后，更新realToken
+                var tokenBean = TokenBean()
+                tokenBean.deviceName = "device_0001"
+                tokenBean.secretKey = "eiowoidkuuelwlwlwl"
+                RealToken.updateToken(tokenBean)
+                startActivity(Intent(this, MainActivity::class.java))
+                this.finish()
+            }
+
+        }
+
+    }
+
+## MainActivity.kt
+
+在用户logout的时候，要清除本地保存的tokenBean信息
+
+    class MainActivity : AppCompatActivity() {
+
+        override fun onCreate(savedInstanceState: Bundle?) {
+            super.onCreate(savedInstanceState)
+            setContentView(R.layout.activity_main)
+            btnTest.setOnClickListener {
+                testApi()
+            }
+            btnLogout.setOnClickListener {
+                logout()
+            }
+        }
+        private fun logout() {
+            //清空保存在本地的登录信息
+            RealToken.clearMsg()
+            this.finish()// 退出APP（activity stack 中只有这个一个页面）
+        }
+        private fun testApi() {
+            RetrofitHelper.getApiService()
+                .heartBeat(
+                    "testDeviceName"
+                )
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .autoDispose(this as LifecycleOwner, Lifecycle.Event.ON_DESTROY)
+                .subscribe(object : ResponseObserver<List<Void>>() {
+                    override fun onSuccess(response: List<Void>) {
+                        LogUtils.d("TAG", "heatbeat")
+                        ToastUtils.show("调用成功")
+                    }
+
+                    override fun onFail(message: String?) {
+                        super.onFail(message)
+                    }
+
+                    override fun onError(e: Throwable) {
+                        super.onError(e)
+                    }
+                })
+        }
+    }
 
 
 # 其他
@@ -211,6 +304,7 @@
         kotlinOptions {
             jvmTarget = "1.8"
         }
+
 
 
 
