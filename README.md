@@ -1,10 +1,12 @@
-# RealToken
-    使用Retrofit2框架进行网络请求时，基于密码、时间等信息，客户端实时生成token。服务器端基于token，完成对客户端访问权限的认证。
+# RealToken  Oauth2.0版本
+    登录完成后，给客户端返回token、refreshToken.
+    每一次网络请求，都需要在http header中带上token
+    token过期后，需要使用refreshToken进行请求，获取新的token、refreshToken
+    refreshToken过期后，重新登录
 
-    服务器校验的token等参数都在Http请求的Header中。
 # 配置方法
 
-## app 中引用 realtoken 
+## app 中引用 realtoken
 
 1. 将realtoken复制到app同级目录
 2. 修改settings.gradle， 添加
@@ -38,24 +40,57 @@
     其内容如下：
 
     ```
+
     public class RetrofitHelper {
-        public static String BASE_URL = "<目标服务器地址>";
 
         private static IdeaApiService mIdeaApiService;
 
         public static IdeaApiService getApiService() {
-            if (mIdeaApiService == null) {
-                 mIdeaApiService = RetrofitService.getRetrofitBuilder(BASE_URL)
-                    .build().create(IdeaApiService.class);
-         }
+            if (mIdeaApiService == null)
 
+                mIdeaApiService = new IdeaApiProxy().getApiService(IdeaApiService.class,
+                        ServerConfig.BASE_URL, new IGlobalManager() {
+                            @Override
+                            public void logout() {
+                                RealToken.clearToken();
+                                Intent intent = new Intent(
+                                        Utils.getContext(),
+                                        SplashActivity.class
+                                );
+                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                Utils.getContext().startActivity(intent);
+                                android.os.Process.killProcess(android.os.Process.myPid());
+                                LogUtils.d("logout");
+                            }
+
+                            @Override
+                            public void tokenRefresh(TokenBean response) {
+                                LogUtils.d("tokenRefresh");
+                                RealToken.updateToken(response);
+                            }
+                        });
             return mIdeaApiService;
-         }
+        }
     }
+
     ```
 
-## App.kt 初始化realtoken 
-    
+3. realtoken 配置网络请求地址
+
+        public class ServerConfig {
+            public static String BASE_URL = "<网络请求的前缀>";
+
+4. realtoken 在CommonService 定义刷新token的接口
+
+        public interface CommonService {
+            @FormUrlEncoded
+            @POST("refreshToken")
+            Observable<TokenBean> refreshToken(@Field("refresh_token") String refreshToken);
+        }
+
+
+## App.kt 初始化realtoken
+
 1. 如下所示
 
 
@@ -69,48 +104,27 @@
     }
     ```
 
-## 定义客户端与服务器进行token校验时需要提前知道的信息(eg.密码)
+## 在http 拦截器中，定义客户端和服务器端认证需要的token
 
-1. 修改TokenBean.java 字段信息
-
-
-        public class TokenBean implements Serializable {
-            public String deviceName;
-            public String secretKey;
-
-        }
-
-
-## 在http 拦截器中，定义客户端和服务器端认证需要的内容
-
-1. 在HttpHeaderInterceptor.intercept(),生成和传递服务器端验证客户端需要使用的参数
+1. 在HttpHeaderInterceptor.intercept()传递服务器端验证客户端需要使用的参数
 
     eg.
 
-        public class HttpHeaderInterceptor implements Interceptor {
+       public class HttpHeaderInterceptor implements Interceptor {
 
             @Override
             public Response intercept(Chain chain) throws IOException {
-                Long timestamp = System.currentTimeMillis() / 1000;
                 String token = "";
-                if (null != .instance.tokenBean) {
-                    token = KeyTools.getMD5(String.format("%d&%s", timestamp, ServerConfig.instance.tokenBean.secretKey)).toLowerCase();
-                }
-
-                String deviceName = "";
                 if (null != ServerConfig.instance.tokenBean) {
-                    deviceName = ServerConfig.instance.tokenBean.deviceName;
+                    token = ServerConfig.instance.tokenBean.refreshTokenStr;
                 }
                 Request request = chain.request().newBuilder()
-                        .header("devicename", deviceName)
                         .header("token", token)
-                        .addHeader("timestamp", "" + timestamp)
                         .header("Content-Type", "application/json")
                         .build();
                 return chain.proceed(request);
             }
         }
-
 
 
 ## http 请求方法
@@ -195,31 +209,9 @@
 
 # Token方式的一般过程
 
- ## SplashActivitykt
- 判断tokenBean是否为null，如果是跳转到登录页面，否则跳转到主页面
-
-    class SplashActivity : AppCompatActivity() {
-        override fun onCreate(savedInstanceState: Bundle?) {
-            super.onCreate(savedInstanceState)
-            setContentView(R.layout.activity_splash)
-            if (isLogon()) {
-                startActivity(Intent(this, MainActivity::class.java))
-                this.finish()
-            } else {
-                startActivity(Intent(this, LoginActivity::class.java))
-                this.finish()
-            }
-        }
-        //判断是否登录
-        private fun isLogon(): Boolean {
-            ServerConfig.instance.tokenBean ?: return false
-            return true
-        }
-    }
-
 ## LoginActivity.kt
-  
-  获取到用于校验的信息后，更新realToken(一般是提取的输入框内容)
+
+  获取到用于校验的信息后，更新realToken(一般是登录成功后，返回结果)
 
     class LoginActivity : AppCompatActivity() {
         override fun onCreate(savedInstanceState: Bundle?) {
@@ -284,7 +276,6 @@
                 })
         }
     }
-
 
 # 其他
 
