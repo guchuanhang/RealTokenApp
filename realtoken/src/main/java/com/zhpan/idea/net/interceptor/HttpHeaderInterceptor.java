@@ -18,10 +18,17 @@ public class HttpHeaderInterceptor implements Interceptor {
     @Override
     public Response intercept(Chain chain) throws IOException {
         Long timestamp = System.currentTimeMillis() / 1000;
-        String token = KeyTools.getMD5(String.format("%d&%s", timestamp, ServerConfig.instance.SECRET_KEY)).toLowerCase();
+        String token = "";
+        if (null != ServerConfig.instance.tokenBean) {
+            token = KeyTools.getMD5(String.format("%d&%s", timestamp, ServerConfig.instance.tokenBean.secretKey)).toLowerCase();
+        }
 
+        String deviceName = "";
+        if (null != ServerConfig.instance.tokenBean) {
+            deviceName = ServerConfig.instance.tokenBean.deviceName;
+        }
         Request request = chain.request().newBuilder()
-                .header("devicename", ServerConfig.instance.DEVICE_NAME)
+                .header("devicename", deviceName)
                 .header("token", token)
                 .addHeader("timestamp", "" + timestamp)
                 .header("Content-Type", "application/json")

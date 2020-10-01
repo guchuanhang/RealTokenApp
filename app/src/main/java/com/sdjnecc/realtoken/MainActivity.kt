@@ -24,7 +24,7 @@ class MainActivity : AppCompatActivity() {
     private fun heatBeat() {
         RetrofitHelper.getApiService()
             .heartBeat(
-                ServerConfig.instance.DEVICE_NAME
+                "testDeviceName"
             )
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())

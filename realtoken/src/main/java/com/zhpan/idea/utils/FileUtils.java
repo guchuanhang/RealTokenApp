@@ -21,6 +21,12 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 /**
  * <pre>
@@ -831,4 +837,71 @@ public class FileUtils {
         if (lastPoi == -1 || lastSep >= lastPoi) return "";
         return filePath.substring(lastPoi + 1);
     }
+
+    //将对象写入到文件
+    public static void saveObject(Object obj, String filePath) {
+        FileOutputStream fileOutputStream = null;
+        ObjectOutputStream objectOutputStream = null;
+
+        File objFile = new File(filePath);
+        if (!objFile.getParentFile().exists()) {
+            objFile.getParentFile().mkdirs();
+        }
+        try {
+            fileOutputStream = new FileOutputStream(filePath);
+            objectOutputStream = new ObjectOutputStream(fileOutputStream);
+            objectOutputStream.writeObject(obj);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (objectOutputStream != null) {
+                try {
+                    objectOutputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (fileOutputStream != null) {
+                try {
+                    fileOutputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public static Object readObject(String filePath) {
+        FileInputStream fileInputStream = null;
+        ObjectInputStream objectInputStream = null;
+        Object obj = null;
+        File file = new File(filePath);
+        if (!file.exists()) {
+            return null;
+        }
+        try {
+            fileInputStream = new FileInputStream(filePath);
+            objectInputStream = new ObjectInputStream(fileInputStream);
+            obj = objectInputStream.readObject();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (objectInputStream != null) {
+                try {
+                    objectInputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (fileInputStream != null) {
+                try {
+                    fileInputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return obj;
+    }
+
 }

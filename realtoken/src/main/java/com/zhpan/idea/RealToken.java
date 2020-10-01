@@ -2,18 +2,13 @@ package com.zhpan.idea;
 
 import android.content.Context;
 
+import com.zhpan.idea.utils.FileUtils;
 import com.zhpan.idea.utils.PreferencesUtil;
 
+import java.io.File;
 import java.util.Map;
 
-/**
- * <pre>
- *     author: Blankj
- *     blog  : http://blankj.com
- *     time  : 16/12/08
- *     desc  : Utils初始化相关
- * </pre>
- */
+
 public class RealToken {
 
     private static Context context;
@@ -27,24 +22,16 @@ public class RealToken {
         RealToken.context = context.getApplicationContext();
     }
 
-    public static void init(Context context, Map<String, Object> strMap) {
-        RealToken.context = context.getApplicationContext();
-        if (null == strMap || strMap.isEmpty()) {
-            throw new RuntimeException("Map<String,String> 不能为空。否则请调用init的不带初始值的重载方法");
-        }
-        for (Map.Entry<String, Object> entry : strMap.entrySet()) {
-            PreferencesUtil.put(context, entry.getKey(), entry.getValue());
-        }
+    //用户登录成功后，刷新token
+    public static void updateToken(TokenBean tokenBean) {
+        ServerConfig.instance.tokenBean = tokenBean;
+        FileUtils.saveObject(tokenBean, ServerConfig.instance.savePath);
     }
 
-    public static void setMsg(Map<String, Object> strMap) {
-        for (Map.Entry<String, Object> entry : strMap.entrySet()) {
-            PreferencesUtil.put(context, entry.getKey(), entry.getValue());
-        }
-    }
-
+    //登出操作,清空token
     public static void clearMsg() {
-        PreferencesUtil.clearValues(context);
+        File tobeDelete = new File(ServerConfig.instance.savePath);
+        FileUtils.deleteFile(tobeDelete);
     }
 
     /**
