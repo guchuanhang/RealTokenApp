@@ -1,10 +1,3 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
     <!-- Default screen margins, per the Android Design guidelines. -->
-    <dimen name="activity_horizontal_margin" tools:keep="@dimen/activity_horizontal_margin">16dp</dimen>
-    <dimen name="activity_vertical_margin" tools:keep="@dimen/activity_vertical_margin">16dp</dimen>
-    <dimen name="fab_margin" tools:keep="@dimen/fab_margin">16dp</dimen>
-    <dimen name="titleSize" tools:keep="@dimen/titleSize">28sp</dimen>
-    <dimen name="height_finish_dialog" tools:keep="@dimen/height_finish_dialog">500dp</dimen>
-    <dimen name="height_grant_dialog" tools:keep="@dimen/height_grant_dialog">400dp</dimen>
-    <dimen name="height_login_dialog" tools:keep="@dimen/height_login_dialog">300dp</dimen>
 </resources>

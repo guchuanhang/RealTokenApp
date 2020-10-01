@@ -15,6 +15,7 @@
  */
 package com.zhpan.idea.utils;
 
+import android.text.TextUtils;
 import android.util.Log;
 
 
@@ -29,6 +30,7 @@ public class LogUtils {
 
     /**
      * 获取当前类名
+     *
      * @return
      */
     private static String getClassName() {
@@ -36,10 +38,16 @@ public class LogUtils {
         StackTraceElement thisMethodStack = (new Exception()).getStackTrace()[2];
         String result = thisMethodStack.getClassName();
         int lastIndex = result.lastIndexOf(".");
-        result = result.substring(lastIndex + 1);
+        result = result.substring(lastIndex + 1, result.length());
         return result;
     }
 
+
+    public static void w(String logString) {
+        if (DEBUG) {
+            Log.w(getClassName(), logString);
+        }
+    }
 
     /**
      * debug log
@@ -58,10 +66,55 @@ public class LogUtils {
      * @param msg
      */
     public static void e(String tag, String msg) {
-        if (DEBUG) {
+        if (DEBUG && !TextUtils.isEmpty(msg)) {
             Log.e(tag, msg);
         }
     }
 
+    /**
+     * debug log
+     *
+     * @param msg
+     */
+    public static void d(String msg) {
+        if (DEBUG) {
+            Log.d(getClassName(), msg);
+        }
+    }
+
+    /**
+     * debug log
+     *
+     * @param msg
+     */
+    public static void i(String msg) {
+        if (DEBUG) {
+            Log.i(getClassName(), msg);
+        }
+    }
+
+    /**
+     * error log
+     *
+     * @param msg
+     */
+    public static void e(String msg) {
+        if (DEBUG) {
+            Log.e(getClassName(), msg);
+        }
+    }
+
+    public static void i(String tag, String logString) {
+        if (DEBUG) {
+            Log.i(tag, logString);
+        }
+    }
+
+
+    public static void w(String tag, String logString) {
+        if (DEBUG) {
+            Log.w(tag, logString);
+        }
+    }
 
 }

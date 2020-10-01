@@ -67,7 +67,7 @@ public final class GsonConverterFactory extends Converter.Factory {
         Type newType = new ParameterizedType() {
             @Override
             public Type[] getActualTypeArguments() {
-                return new Type[]{type};
+                return new Type[] { type };
             }
 
             @Override

@@ -5,7 +5,6 @@ package com.zhpan.idea.net.module;
  * "msg": "",
  * "data": {}
  */
-@SuppressWarnings("unused")
 public class BasicResponse<T> {
 
     private int status;

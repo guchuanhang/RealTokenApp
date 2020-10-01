@@ -18,12 +18,17 @@ package com.zhpan.idea.net.converter;
 
 import com.google.gson.TypeAdapter;
 import com.zhpan.idea.net.common.ErrorCode;
+import com.zhpan.idea.net.exception.NoDataExceptionException;
 import com.zhpan.idea.net.exception.ServerResponseException;
+import com.zhpan.idea.net.exception.TokenInvalidException;
+import com.zhpan.idea.net.exception.TokenNotExistException;
 import com.zhpan.idea.net.module.BasicResponse;
 
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.Reader;
 
 import okhttp3.ResponseBody;
 import retrofit2.Converter;
@@ -42,25 +47,41 @@ final class GsonResponseBodyConverter<T> implements Converter<ResponseBody, Obje
         try {
             JSONObject jsonObject;
             try {
-                jsonObject = new JSONObject(new String(value.bytes()));
+                jsonObject = new JSONObject(getReaderContent(value.charStream()));
             } catch (Exception e) {
                 e.printStackTrace();
-                throw new ServerResponseException(ErrorCode.ERR_JSON, "服务器返回的不是json格式数据");
+                return null;
             }
             int status = jsonObject.optInt("status");
-            if (status == ErrorCode.SUCCESS) {
-                if (jsonObject.has("data")) {
-                    BasicResponse rsp = (BasicResponse) adapter.fromJson(jsonObject.toString());
-                    return rsp.getData();
-                } else {
-                    throw new ServerResponseException(ErrorCode.ERR_NO_DATA, "服务器没有返回data数据");
+            switch (status) {
+                case ErrorCode.SUCCESS: {
+                    if (jsonObject.has("data")) {
+                        BasicResponse rsp = (BasicResponse) adapter.fromJson(jsonObject.toString());
+                        return rsp.getData();
+                    } else {
+                        throw new NoDataExceptionException();
+                    }
                 }
-            } else {
-                throw new ServerResponseException(status, jsonObject.optString("msg"));
+                case ErrorCode.TOKEN_EXPIRE:
+                    throw new TokenInvalidException();
+
+                case ErrorCode.REFRESH_TOKEN_EXPIRE:
+                    throw new TokenNotExistException();
+                default:
+                    throw new ServerResponseException(status, jsonObject.optString("msg"));
             }
         } finally {
             value.close();
         }
     }
 
+    private String getReaderContent(Reader reader) throws IOException {
+        BufferedReader br = new BufferedReader(reader);
+        StringBuffer sb = new StringBuffer();
+        String rowStr;
+        while (null != (rowStr = br.readLine())) {
+            sb.append(rowStr);
+        }
+        return sb.toString();
+    }
 }

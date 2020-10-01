@@ -3,10 +3,9 @@ package com.zhpan.idea;
 import android.content.Context;
 
 import com.zhpan.idea.utils.FileUtils;
-import com.zhpan.idea.utils.PreferencesUtil;
+import com.zhpan.idea.utils.Utils;
 
 import java.io.File;
-import java.util.Map;
 
 
 public class RealToken {
@@ -20,6 +19,7 @@ public class RealToken {
 
     public static void init(Context context) {
         RealToken.context = context.getApplicationContext();
+        Utils.init(context);
     }
 
     //用户登录成功后，刷新token
@@ -29,7 +29,7 @@ public class RealToken {
     }
 
     //登出操作,清空token
-    public static void clearMsg() {
+    public static void clearToken() {
         File tobeDelete = new File(ServerConfig.instance.savePath);
         FileUtils.deleteFile(tobeDelete);
         ServerConfig.instance.tokenBean = null;

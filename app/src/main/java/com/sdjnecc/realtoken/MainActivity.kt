@@ -7,7 +7,6 @@ import androidx.lifecycle.LifecycleOwner
 import com.sdjnecc.realtoken.data.net.RetrofitHelper
 import com.uber.autodispose.android.lifecycle.autoDispose
 import com.zhpan.idea.RealToken
-import com.zhpan.idea.ServerConfig
 import com.zhpan.idea.net.common.ResponseObserver
 import com.zhpan.idea.utils.LogUtils
 import com.zhpan.idea.utils.ToastUtils
@@ -28,7 +27,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
     private fun logout() {
-        RealToken.clearMsg()
+        RealToken.clearToken()
         this.finish()// 退出APP（activity stack 中只有这个一个页面）
     }
     private fun testApi() {

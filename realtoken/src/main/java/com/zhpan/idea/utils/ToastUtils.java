@@ -5,8 +5,6 @@ import android.os.Looper;
 import android.text.TextUtils;
 import android.widget.Toast;
 
-import com.zhpan.idea.RealToken;
-
 
 /**
  * ToastUtils
@@ -14,7 +12,7 @@ import com.zhpan.idea.RealToken;
 
 public class ToastUtils {
 
-    private static Context context = RealToken.getContext();
+    private static Context context = Utils.getContext();
     private static Toast toast;
 
     public static void show(int resId) {

@@ -4,7 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.zhpan.idea.RealToken
-import com.zhpan.idea.ServerConfig
 import com.zhpan.idea.TokenBean
 import kotlinx.android.synthetic.main.activity_login.*
 
@@ -22,8 +21,8 @@ class LoginActivity : AppCompatActivity() {
         btnLogin.setOnClickListener {
             //获取到 用于校验的信息后，更新realToken
             var tokenBean = TokenBean()
-            tokenBean.deviceName = "device_0001"
-            tokenBean.secretKey = "eiowoidkuuelwlwlwl"
+            tokenBean.tokenStr = "ddss1224w3w"
+            tokenBean.refreshTokenStr = "eiowoidkuuelwlwlwl"
             RealToken.updateToken(tokenBean)
             startActivity(Intent(this, MainActivity::class.java))
             this.finish()
