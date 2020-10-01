@@ -2,7 +2,7 @@ package com.sdjnecc.realtoken.data.net;
 
 import android.content.Intent;
 
-import com.sdjnecc.realtoken.SplashActivity;
+import com.sdjnecc.realtoken.LoginActivity;
 import com.zhpan.idea.RealToken;
 import com.zhpan.idea.ServerConfig;
 import com.zhpan.idea.TokenBean;
@@ -30,7 +30,7 @@ public class RetrofitHelper {
                             RealToken.clearToken();
                             Intent intent = new Intent(
                                     Utils.getContext(),
-                                    SplashActivity.class
+                                    LoginActivity.class
                             );
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             Utils.getContext().startActivity(intent);
