@@ -93,7 +93,7 @@
             public Response intercept(Chain chain) throws IOException {
                 Long timestamp = System.currentTimeMillis() / 1000;
                 String token = "";
-                if (null != ServerConfig.instance.tokenBean) {
+                if (null != .instance.tokenBean) {
                     token = KeyTools.getMD5(String.format("%d&%s", timestamp, ServerConfig.instance.tokenBean.secretKey)).toLowerCase();
                 }
 

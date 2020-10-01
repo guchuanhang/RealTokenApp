@@ -19,7 +19,7 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
         btnLogin.setOnClickListener {
-            //获取到 用于校验的信息后，更新realToken
+            //登录成功后，返回token信息
             var tokenBean = TokenBean()
             tokenBean.tokenStr = "ddss1224w3w"
             tokenBean.refreshTokenStr = "eiowoidkuuelwlwlwl"
