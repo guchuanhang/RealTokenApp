@@ -1,73 +1,27 @@
 # RealToken
-使用Retrofit2框架进行网络请求时，客户端实时生成token。
+    使用Retrofit2框架进行网络请求时，基于密码、时间等信息，客户端实时生成token。服务器端基于token，完成对客户端访问权限的认证。
 
-token等服务器校验的参数都在Http请求的Header中。
+    服务器校验的token等参数都在Http请求的Header中。
+# 配置方法
 
-## 服务器响应
-
-服务器响应json数据格式如下
-
-
-    {
-     "status": 100,
-     "msg": "",
-     "data": {}
-    }
-
-如果服务器端和框架当前字段不一致，可以修改 BasicResponse.java。
-
-这里data可以{}、也可以是[ ]
-
-### 请求结果处理
-
-1. 如果status == 100 直接拿到data、如果失败可以通过onFail获取到msg字段的数据
-
-2. 失败后，默认会进行toast提示msg信息。如果要屏蔽onFail中msg提示，屏蔽掉super.onFail()的调用即可，如果要针对异常进行更精细化的处理，可以参考ResponseObserver.onError()  override onError。
-
-## 使用方法：
-
-### 在项目中引入realtoken library
+## app 中引用 realtoken 
 
 1. 将realtoken复制到app同级目录
-2. 复制project build.gradle中的类库版本信息
-    ```
-    ext {
-        // Sdk and tools
-        compileSdkVersion = 28
-        minSdkVersion = 21
-        targetSdkVersion = 28
-
-        buildToolsVersion = '29.0.2'
-        releaseVersionCode = 1
-        releaseVersionName = '1.0.0'
-
-        rxjava2Version = '2.0.8'
-        retrofit2Version = '2.2.0'
-        rxlifecycle = '2.2.1'
-        gsonVersion = '2.8.0'
-
-        rxjava2adapter = '1.0.0'
-        okhttp3interceptor = '3.10.0'
-        autodispose = '1.4.0'
-
-    }
-    ```
-3. 修改settings.gradle， 添加
+2. 修改settings.gradle， 添加
 
     ```
     include ':realtoken'
     ```
-4. 在app build.gradle dependencies中追加
+3. 在app build.gradle dependencies中追加
     ```
     api project(path: ':realtoken')
     ```
 
+## app 中创建必要的文件
 
-### 创建两个必须要使用的文件
+1. 创建IdeaApiService.java 并放入需要请求的网络接口（Retrofit2.0格式）
 
-1. IdeaApiService
-
-    这里面放入封装的retrofit2接口 eg.
+   eg.
     ```
     public interface IdeaApiService {
 
@@ -79,9 +33,10 @@ token等服务器校验的参数都在Http请求的Header中。
 
     ```
 
-2. RetrofitHelper
+2. 创建 RetrofitHelper.java 并配置所有请求的公共url路径
 
-    修改BASE_URL为自己在项目中使用到的请求地址
+    其内容如下：
+
     ```
     public class RetrofitHelper {
         public static String BASE_URL = "<目标服务器地址>";
@@ -99,66 +54,72 @@ token等服务器校验的参数都在Http请求的Header中。
     }
     ```
 
-### 初始化realtoken library
+## App.kt 初始化realtoken 
+    
+1. 如下所示
 
 
+    ```
     class App : Application() {
 		override fun onCreate() {
 		    super.onCreate()
-            var mapPrams = HashMap<String, Any?>()
             ...
-            RealToken.init(this,mapPrams)
+            RealToken.init(this)
          }
     }
+    ```
+
+## 定义客户端与服务器进行token校验，需要提前知道的信息(eg.密码)
+
+1. 修改TokenBean.java 字段信息
 
 
-如果稍后设置参数，这里可以调用RealToken.init(this).获取参数后，调用
-RealToken.setMsg()进行设置
+        public class TokenBean implements Serializable {
+            public String deviceName;
+            public String secretKey;
+
+        }
 
 
-### 定义token生成规则
+## 在http 拦截器中，定义客户端和服务器端认证需要的内容
 
-1. 在ServerConfig中添加需要保存的变量
+1. 在HttpHeaderInterceptor.intercept(),生成和传递服务器端验证客户端需要使用的参数
 
+    eg.
 
-	public class ServerConfig {
-		public static ServerConfig instance = new ServerConfig();
-		public String DEVICE_NAME;
-		public String SECRET_KEY;
+        public class HttpHeaderInterceptor implements Interceptor {
 
-		private ServerConfig() {
-			DEVICE_NAME = (String) PreferencesUtil.get(RealToken.getContext(), "device_name", "");
-			SECRET_KEY = (String) PreferencesUtil.get(RealToken.getContext(), "secret_key", "");
-	    }
-    }
+            @Override
+            public Response intercept(Chain chain) throws IOException {
+                Long timestamp = System.currentTimeMillis() / 1000;
+                String token = "";
+                if (null != ServerConfig.instance.tokenBean) {
+                    token = KeyTools.getMD5(String.format("%d&%s", timestamp, ServerConfig.instance.tokenBean.secretKey)).toLowerCase();
+                }
 
-
-2.在HttpHeaderInterceptor.intercept(),生成和传递服务器端验证客户端需要使用的参数
-
-	public class HttpHeaderInterceptor implements Interceptor {
-		@Override
-		public Response intercept(Chain chain) throws IOException {
-			Long timestamp = System.currentTimeMillis() / 1000;
-			String token = KeyTools.getMD5(String.format("%d&%s", timestamp, ServerConfig.instance.SECRET_KEY)).toLowerCase();
-
-			Request request = chain.request().newBuilder()
-					.header("devicename", ServerConfig.instance.DEVICE_NAME)
-					.header("token", token)
-					.addHeader("timestamp", "" + timestamp)
-					.header("Content-Type", "application/json")
-					.build();
-			return chain.proceed(request);
-		}
-	}
+                String deviceName = "";
+                if (null != ServerConfig.instance.tokenBean) {
+                    deviceName = ServerConfig.instance.tokenBean.deviceName;
+                }
+                Request request = chain.request().newBuilder()
+                        .header("devicename", deviceName)
+                        .header("token", token)
+                        .addHeader("timestamp", "" + timestamp)
+                        .header("Content-Type", "application/json")
+                        .build();
+                return chain.proceed(request);
+            }
+        }
 
 
-### http 请求
+
+## http 请求方法
 
 
     private fun heatBeat() {
         RetrofitHelper.getApiService()
             .heartBeat(
-                ServerConfig.instance.DEVICE_NAME
+                "device_0001"
             )
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -177,22 +138,79 @@ RealToken.setMsg()进行设置
                 }
             })
     }
+# 高级设置
+
+## 服务器端响应
+
+### 服务器响应格式
+这里默认的http响应格式为：
+
+    {
+     "status": 100, //状态码
+     "msg": "",    //如果请求出错，会有信息
+     "data": {}    //请求成功，返回值
+    }
 
 
-这里如果autoDispose报错
+如果服务器端和框架当前字段不一致，可以修改 BasicResponse.java
+
+###  服务器响应status表示不同
+
+可以修改ErrorCode.java 中定义的数字
+
+    public class ErrorCode {
+        /**
+        * request success
+        */
+        public static final int SUCCESS = 100;
+
+
+## 请求失败的处理
+
+### 获取失败原因
+请求失败，可以通过 ResponseObserver.onFail 直接拿到失败原因
+
+    ResponseObserver<List<Void>>() {
+                    override fun onSuccess(response: List<Void>) {
+                        LogUtils.d("TAG", "heatbeat")
+                        ToastUtils.show("调用成功")
+                    }
+
+                    override fun onFail(message: String?) {
+                        super.onFail(message)
+                    }
+
+                    override fun onError(e: Throwable) {
+                        super.onError(e)
+                    }
+                })
+
+
+### 屏蔽Toast失败提示
+
+默认会进行toast提示msg信息。如果要取消该功能，可以屏蔽掉ResponseObserver.onFail中对 super.onFail()的调用
+
+需要精细化的处理，可以参考ResponseObserver.onError() 并 override onError进行处理
+
+
+# 其他
+
+## autoDispose报错
 
     Cannot inline bytecode built with JVM target 1.8 into bytecode that is being built with JVM target ...
 
+解决办法
+
 在app  build.gradle android标签下添加
 
-    compileOptions {
-        sourceCompatibility = 1.8
-        targetCompatibility = 1.8
-    }
+        compileOptions {
+            sourceCompatibility = 1.8
+            targetCompatibility = 1.8
+        }
 
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
+        kotlinOptions {
+            jvmTarget = "1.8"
+        }
 
 
 
