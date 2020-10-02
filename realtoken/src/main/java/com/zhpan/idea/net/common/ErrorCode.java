@@ -13,36 +13,11 @@ public class ErrorCode {
     /**
      * request success
      */
-    public static final int SUCCESS = 100;
+    public static final int SUCCESS = 100;   //请求成功
 
-    public static final int TOKEN_EXPIRE = 1010;
-    public static final int REFRESH_TOKEN_EXPIRE = 1011;
-    public static final int REGISTER_FACE_ERROR = 1021;  //人脸类库激活失败
-    //这里面，请求刷新token的接口，不是100哦!?
-//    public static final int REFRESH_ = 1010;
+    public static final int TOKEN_EXPIRE = 1010; //token 过期
+    public static final int REFRESH_TOKEN_EXPIRE = 1011; //refreshToken 过期
 
-    public static final int REQUEST_FAILED = -1;
-    /**
-     * 登录状态失效
-     */
-    public static final int INVALID_LOGIN_STATUS = -1001;
-
-    public static final int VERIFY_CODE_ERROR = 110011;
-
-    public static final int VERIFY_CODE_EXPIRED = 110010;
-
-    public static final int ACCOUNT_NOT_REGISTER = 110009;
-
-    public static final int PASSWORD_ERROR = 110012;
-
-    /**
-     * Wrong old password
-     */
-    public static final int OLD_PASSWORD_ERROR = 110015;
-
-    public static final int USER_REGISTERED = 110006;
-
-    public static final int PARAMS_ERROR = 19999;
     /**
      * 异地登录
      */

@@ -168,7 +168,7 @@
 
 如果服务器端和框架当前字段不一致，可以修改 BasicResponse.java
 
-###  服务器响应status表示不同
+###  服务器响应status表示不同（必看）
 
 可以修改ErrorCode.java 中定义的数字
 
@@ -176,9 +176,10 @@
         /**
         * request success
         */
-        public static final int SUCCESS = 100;
+        public static final int SUCCESS = 100;   //请求成功
 
-
+        public static final int TOKEN_EXPIRE = 1010; //token 过期
+        public static final int REFRESH_TOKEN_EXPIRE = 1011; //refreshToken 过期
 ## 请求失败的处理
 
 ### 获取失败原因
