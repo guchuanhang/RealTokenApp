@@ -9,6 +9,15 @@
 ## app 中引用 realtoken
 
 1. 将realtoken复制到app同级目录
+
+    1.1  修改settings.gradle
+
+    添加以下内容
+
+        include ':realtoken'
+
+
+
 2. 修改settings.gradle， 添加
 
     ```
