@@ -46,6 +46,8 @@
 
 2. 创建 RetrofitHelper.java 并配置所有请求的公共url路径
 
+    SplashActivity 为 APP启动页面， 当refreshToken过期后，跳转到首页
+
     其内容如下：
 
     ```
@@ -125,7 +127,10 @@
             public Response intercept(Chain chain) throws IOException {
                 String token = "";
                 if (null != ServerConfig.instance.tokenBean) {
-                    token = ServerConfig.instance.tokenBean.refreshTokenStr;
+                    token = ServerConfig.instance.tokenBean.tokenStr;
+                    if (TextUtils.isEmpty(token)) {
+                        token = "";
+                    }
                 }
                 Request request = chain.request().newBuilder()
                         .header("token", token)
@@ -227,15 +232,16 @@
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
             setContentView(R.layout.activity_login)
-            btnLogin.setOnClickListener {
-                //获取到 用于校验的信息后，更新realToken
-                var tokenBean = TokenBean()
-                tokenBean.deviceName = "device_0001"
-                tokenBean.secretKey = "eiowoidkuuelwlwlwl"
-                RealToken.updateToken(tokenBean)
-                startActivity(Intent(this, MainActivity::class.java))
-                this.finish()
-            }
+                  btnLogin.setOnClickListener {
+            //获取到 用于校验的信息后，更新realToken
+            var tokenBean = TokenBean()
+            //TODO  这里应该是登录后，返回的token、refreshToken.
+            tokenBean.tokenStr = "ssssyyyyybbbtttt"
+            tokenBean.refreshTokenStr = "eiowoidkuuelwlwlwl"
+            RealToken.updateToken(tokenBean)
+            startActivity(Intent(this, MainActivity::class.java))
+            this.finish()
+        }
 
         }
 
@@ -259,7 +265,7 @@
         }
         private fun logout() {
             //清空保存在本地的登录信息
-            RealToken.clearMsg()
+            RealToken.clearToken()
             this.finish()// 退出APP（activity stack 中只有这个一个页面）
         }
         private fun testApi() {

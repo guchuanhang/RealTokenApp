@@ -1,5 +1,7 @@
 package com.zhpan.idea.net.interceptor;
 
+import android.text.TextUtils;
+
 import com.zhpan.idea.ServerConfig;
 
 import java.io.IOException;
@@ -14,7 +16,10 @@ public class HttpHeaderInterceptor implements Interceptor {
     public Response intercept(Chain chain) throws IOException {
         String token = "";
         if (null != ServerConfig.instance.tokenBean) {
-            token = ServerConfig.instance.tokenBean.refreshTokenStr;
+            token = ServerConfig.instance.tokenBean.tokenStr;
+            if (TextUtils.isEmpty(token)) {
+                token = "";
+            }
         }
         Request request = chain.request().newBuilder()
                 .header("token", token)
