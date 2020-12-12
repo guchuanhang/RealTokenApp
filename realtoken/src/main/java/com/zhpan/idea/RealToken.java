@@ -45,5 +45,14 @@ public class RealToken {
         throw new NullPointerException("u should init first");
     }
 
+    // 判断用户是否已经登录
+    public static boolean isLogin() {
+        Object rawObject = FileUtils.readObject(ServerConfig.instance.savePath);
+        if (rawObject instanceof TokenBean) {
+            return true;
+        }
+        return false;
+    }
+
 
 }

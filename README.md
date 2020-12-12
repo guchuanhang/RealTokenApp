@@ -16,14 +16,7 @@
 
         include ':realtoken'
 
-
-
-2. 修改settings.gradle， 添加
-
-    ```
-    include ':realtoken'
-    ```
-3. 在app build.gradle dependencies中添加
+2. 在app build.gradle dependencies中添加
     ```
     implementation project(path: ':realtoken')
     ```
@@ -51,6 +44,16 @@
     其内容如下：
 
     ```
+import android.content.Intent;
+
+import com.sdjnecc.aivisitor.SplashActivity;
+import com.zhpan.idea.RealToken;
+import com.zhpan.idea.ServerConfig;
+import com.zhpan.idea.TokenBean;
+import com.zhpan.idea.net.common.IdeaApiProxy;
+import com.zhpan.idea.net.token.IGlobalManager;
+import com.zhpan.idea.utils.LogUtils;
+import com.zhpan.idea.utils.Utils;
 
     public class RetrofitHelper {
 
@@ -246,6 +249,11 @@
         }
 
     }
+
+## 判断是否已经登录
+
+    RealToken.isLogin()
+
 
 ## MainActivity.kt
 
